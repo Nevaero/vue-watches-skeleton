@@ -1,0 +1,98 @@
+{
+  "$schema": "../../tutor-mcp/config.schema.json",
+  "exo": "vue-watches",
+  "stack": "vue",
+  "test_command": "npm test --silent",
+  "test_filter_flag": "--",
+  "api_contract_path": "API.md",
+  "todos": [
+    {
+      "id": "format_price_eur",
+      "title": "formatPriceEur, formatage prix avec espaces ASCII",
+      "summary": "Formater un nombre en euros : '12 000 €', séparateurs de milliers en espaces ASCII (pas insécables).",
+      "files": ["src/utils/price.ts"],
+      "test_files": ["src/utils/price.spec.ts"],
+      "hints": {
+        "1": "Lis les exemples du JSDoc en tête de la fonction. Les tests comparent par égalité stricte de chaîne, donc le caractère séparateur de milliers compte au bit près.",
+        "2": "Le piège classique est `Intl.NumberFormat('fr-FR', …)` : il insère un espace insécable U+00A0, pas un espace ASCII. Les tests veulent un espace ASCII normal. Construis la chaîne toi-même à partir de `amount.toString()`. Le suffixe est ` €` (espace + €).",
+        "3": "Pseudo-code :\n  - convertir le montant en chaîne\n  - insérer un espace ASCII tous les 3 chiffres, en comptant depuis la droite\n  - suffixer une espace puis le symbole €\n  - retourner le résultat\n\nUne expression régulière avec assertion avant permet de faire l'insertion en\nune passe, mais une boucle depuis la fin de la chaîne fait tout aussi bien."
+      }
+    },
+    {
+      "id": "calculate_cart_total",
+      "title": "calculateCartTotal, somme des sous-totaux du panier",
+      "summary": "Réduire un tableau de CartItem en somme de `priceEur × quantity`.",
+      "files": ["src/utils/price.ts"],
+      "test_files": ["src/utils/price.spec.ts"],
+      "hints": {
+        "1": "Le sous-total d'une ligne est `priceEur × quantity`. Le total du panier est la somme de tous les sous-totaux. Cas vides : panier vide → 0.",
+        "2": "L'idiome attendu est une réduction sur le tableau des lignes du panier, avec\n0 comme valeur initiale, ce qui traite naturellement le cas du panier vide,\nsans condition particulière.\n\nPour chaque ligne, la contribution au total est le prix unitaire de la montre\nmultiplié par la quantité de cette ligne. Pas besoin de boucle `for` ni de\nmutation d'un accumulateur externe.",
+        "3": "Pseudo-code :\n  réduire le tableau des lignes en partant de 0, en ajoutant à chaque tour le\n    produit du prix unitaire de la montre par la quantité de la ligne\n  retourner l'accumulateur"
+      }
+    },
+    {
+      "id": "use_watches_composable",
+      "title": "useWatches, composable qui charge les montres au montage",
+      "summary": "Composable Vue 3 qui retourne `{ watches, loading, error, reload }` (toutes des Ref).",
+      "files": ["src/composables/useWatches.ts"],
+      "test_files": ["src/composables/useWatches.spec.ts"],
+      "hints": {
+        "1": "Trois `ref()` : `watches: Ref<Watch[]>`, `loading: Ref<boolean>`, `error: Ref<string|null>`. Au montage : loading=true → fetch → succès met watches, échec met error. Toujours loading=false à la fin.",
+        "2": "Structure idiomatique Vue 3 :\n  - trois refs initialisées à liste vide, vrai, nul\n  - une fonction de chargement qui lève le drapeau de chargement, efface\n    l'erreur, appelle la fonction d'API, puis bascule selon succès ou échec\n    (au choix avec try/catch/finally ou avec les callbacks de la promesse)\n  - un déclenchement au montage\n  - `reload` n'est qu'un alias public de cette fonction de chargement\n  - retournez les refs elles-mêmes, PAS leur `.value` : c'est ce qui rend le\n    composable réactif côté template",
+        "3": "Pseudo-code :\n  trois refs : la liste (vide au départ), un booléen de chargement (vrai au\n    départ), un message d'erreur (nul au départ)\n  une fonction `load` asynchrone :\n      repasser le chargement à vrai et l'erreur à nul\n      try     -> ranger le résultat de fetchWatches() dans la liste\n      catch   -> ranger le message de l'exception dans l'erreur\n      finally -> repasser le chargement à faux\n  déclencher `load` au montage\n  retourner les trois refs, en exposant `load` sous le nom `reload`\n\nToutes les écritures passent par `.value` : l'auto-unwrapping ne joue que\ndans le template."
+      }
+    },
+    {
+      "id": "watch_card",
+      "title": "WatchCard, composant carte d'une montre",
+      "summary": "Slots TODO dans le template : brand, model, prix formaté, label/disabled du bouton.",
+      "files": ["src/components/WatchCard.vue"],
+      "test_files": ["src/components/WatchCard.spec.ts"],
+      "hints": {
+        "1": "Tous les emplacements sont déjà marqués TODO dans le `<template>`. Tu n'as qu'à les remplir avec les bonnes interpolations Vue. Le label du bouton doit littéralement contenir 'Ajouter au panier' ou 'Rupture' (insensible à la casse).",
+        "2": "Les quatre emplacements à remplir :\n  - le titre de niveau 3 reçoit la marque de la montre\n  - le paragraphe reçoit son modèle\n  - l'élément porteur de data-testid=\"price\" reçoit le prix déjà formaté,\n    fourni par le computed existant\n  - le bouton reçoit son état désactivé et son libellé, tous deux dérivés du\n    computed de rupture de stock\n\nLe libellé doit contenir littéralement « Ajouter au panier » ou « Rupture »\n(comparaison insensible à la casse). La fonction qui émet l'événement est déjà\nbranchée sur le clic.",
+        "3": "Template attendu :\n  dans le <h3>, interpoler la marque de la montre\n  dans le <p>, interpoler son modèle\n  dans le <span data-testid=\"price\">, interpoler le prix déjà formaté , \n    le computed existe, ne reformatez pas à la main\n  sur le <button> :\n    - lier l'attribut disabled au computed de rupture de stock\n    - comme libellé, un ternaire sur ce même computed : 'Rupture' en rupture,\n      'Ajouter au panier' sinon\n  `onAdd` est déjà branché sur @click."
+      }
+    },
+    {
+      "id": "api_get_update",
+      "title": "api/watches.ts, getWatch et updateWatch",
+      "summary": "Un GET sur une montre, un PATCH partiel qui remonte le message d'erreur du backend.",
+      "files": ["src/api/watches.ts"],
+      "test_files": ["src/api/watches.spec.ts"],
+      "hints": {
+        "1": "Les deux fonctions déjà écrites juste au-dessus (`fetchWatches`, `purchaseWatch`) sont vos modèles. Le test remplace `fetch` et inspecte l'appel réel : méthode, URL, en-têtes et body comptent.",
+        "2": "`getWatch` est le cas simple : même forme que `fetchWatches`, avec l'id dans le chemin.\n\n`updateWatch` reprend `purchaseWatch` avec trois différences :\n  - la méthode est PATCH ;\n  - le body est l'objet partiel reçu, sérialisé tel quel ;\n  - en cas d'échec, il faut d'abord tenter de lire le body d'erreur du backend (`{ \"error\": \"...\" }`, cf. API.md) et utiliser ce message. Le body peut ne pas être du JSON : prévoyez un repli sur un message générique contenant le status.",
+        "3": "Pseudo-code pour updateWatch :\n  appeler fetch sur l'URL de la montre, avec method PATCH,\n    l'en-tête Content-Type application/json et le partiel sérialisé en body\n  si la réponse n'est pas ok :\n    tenter de lire le JSON d'erreur, en neutralisant l'échec de lecture\n    lever une Error avec le champ `error` de ce body, sinon un message contenant le status\n  sinon renvoyer le JSON de la réponse"
+      }
+    },
+    {
+      "id": "use_watch_composable",
+      "title": "useWatch, composable de chargement d'une montre",
+      "summary": "Charge UNE montre au montage et relance quand l'id change.",
+      "files": ["src/composables/useWatch.ts"],
+      "test_files": ["src/composables/useWatch.spec.ts"],
+      "hints": {
+        "1": "C'est `useWatches` en plus simple : une montre au lieu d'une liste. Les refs, le `onMounted` et l'observation de l'id sont déjà posés, il ne reste que le corps de `load`.",
+        "2": "Structure de `load` :\n  - remettre l'état de départ : loading à true, error à null, watch à null (le test 'relance le chargement quand id change' vérifie qu'on ne garde pas l'ancienne montre) ;\n  - appeler `getWatch(id.value)` dans un try ;\n  - catch : ranger le `message` de l'exception dans `error` ;\n  - finally : repasser `loading` à false.\n\nN'oubliez pas les `.value` sur toutes les refs.",
+        "3": "Pseudo-code :\n  repasser le chargement à vrai, l'erreur à nul, la montre à nul\n  try :\n      ranger dans la montre le résultat de l'appel de chargement, en lui\n      passant la valeur courante de la ref d'id\n  catch :\n      ranger le message de l'exception dans l'erreur\n  finally :\n      repasser le chargement à faux\n\nToutes ces écritures passent par `.value`."
+      }
+    },
+    {
+      "id": "watch_edit_form_submit",
+      "title": "WatchEditForm.onSubmit, soumission du formulaire",
+      "summary": "Appel PATCH, émission de `saved`, gestion de l'erreur et de l'état de soumission.",
+      "files": ["src/components/WatchEditForm.vue"],
+      "test_files": ["src/components/WatchEditForm.spec.ts"],
+      "hints": {
+        "1": "Tout le formulaire est déjà écrit : inputs, `isDirty`, libellé et état désactivé du bouton, affichage de l'alerte. Vous ne remplissez que `onSubmit`, et les refs qu'il doit piloter existent déjà.",
+        "2": "Cinq temps :\n  1. `submitting` à true, `error` à null ;\n  2. appeler `updateWatch(props.initial.id, { priceEur, stock })` avec les valeurs courantes des refs ;\n  3. succès → `emit('saved', updated)` ;\n  4. échec → ranger le message de l'exception dans `error`, sans émettre ;\n  5. `submitting` repasse à false dans TOUS les cas.\n\nLe point 5 est testé explicitement : sans lui, le bouton reste bloqué sur « Enregistrement… » après une erreur.",
+        "3": "Pseudo-code :\n  passer l'état de soumission à vrai, l'erreur à nul\n  try :\n      appeler la mise à jour avec l'id de la montre initiale et un objet\n      portant les valeurs courantes du prix et du stock\n      émettre l'événement de sauvegarde avec la montre retournée\n  catch :\n      ranger le message de l'exception dans l'erreur, sans rien émettre\n  finally :\n      repasser l'état de soumission à faux"
+      }
+    }
+  ],
+  "sandbox": {
+    "allowed_paths": ["src", "README.md", "API.md", "package.json", ".tutor", "vite.config.ts", "tsconfig.json", "index.html"],
+    "denied_patterns": ["node_modules", "-solution", "/.git/", "/dist/", "/build/"]
+  }
+}
