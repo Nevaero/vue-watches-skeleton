@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "tutor": {
+      "command": "npx",
+      "args": ["-y", "@skeleton-watches/tutor-mcp@latest"],
+      "env": { "TUTOR_PROJECT_ROOT": "." }
+    }
+  }
+}

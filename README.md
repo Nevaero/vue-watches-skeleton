@@ -63,22 +63,23 @@ expose des outils calibrés pour cet exo : `list_todos`, `explain_test`, `run_te
 `get_hint(level=1|2|3)`, `review_my_code`, `get_api_contract`. Toutes les interactions
 sont logées dans `.tutor/session.log.jsonl` et lues par le recruteur en post-mortem.
 
-Sous **Claude Code**, créez un fichier `.mcp.json` (avec le point) à la racine
-du dépôt cloné, à côté du `package.json` :
+Sous **Claude Code**, il n'y a rien à écrire : le fichier `.mcp.json` est déjà
+livré à la racine du dépôt. Claude Code le lit à l'ouverture du dossier et vous
+demande de confirmer l'activation du serveur. Son contenu :
 
 ```jsonc
 {
   "mcpServers": {
     "tutor": {
       "command": "npx",
-      "args": ["-y", "@skeleton-watches/tutor-mcp"],
+      "args": ["-y", "@skeleton-watches/tutor-mcp@latest"],
       "env": { "TUTOR_PROJECT_ROOT": "." }
     }
   }
 }
 ```
 
-L'emplacement et le format varient selon l'outil :
+Pour les autres outils, l'emplacement et le format diffèrent :
 
 | Outil       | Fichier                | Clé racine    |
 |-------------|------------------------|---------------|
@@ -86,7 +87,8 @@ L'emplacement et le format varient selon l'outil :
 | Cursor      | `.cursor/mcp.json`     | `mcpServers`  |
 | VS Code     | `.vscode/mcp.json`     | `servers`     |
 
-Sous VS Code, reprenez donc le même bloc en renommant `mcpServers` en `servers`.
+Reprenez le même bloc dans le fichier correspondant. Sous VS Code, renommez en
+plus la clé `mcpServers` en `servers`.
 
 Rien à installer : `npx` récupère le serveur au premier lancement. Le tuteur ne
 lit que ce dépôt, et journalise ses réponses dans `.tutor/session.log.jsonl`.
