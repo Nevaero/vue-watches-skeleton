@@ -63,7 +63,8 @@ expose des outils calibrés pour cet exo : `list_todos`, `explain_test`, `run_te
 `get_hint(level=1|2|3)`, `review_my_code`, `get_api_contract`. Toutes les interactions
 sont logées dans `.tutor/session.log.jsonl` et lues par le recruteur en post-mortem.
 
-Configuration `mcp.json` (Claude Code, Cursor, ou équivalent) :
+Sous **Claude Code**, créez un fichier `.mcp.json` (avec le point) à la racine
+du dépôt cloné, à côté du `package.json` :
 
 ```jsonc
 {
@@ -76,6 +77,16 @@ Configuration `mcp.json` (Claude Code, Cursor, ou équivalent) :
   }
 }
 ```
+
+L'emplacement et le format varient selon l'outil :
+
+| Outil       | Fichier                | Clé racine    |
+|-------------|------------------------|---------------|
+| Claude Code | `.mcp.json` (racine)   | `mcpServers`  |
+| Cursor      | `.cursor/mcp.json`     | `mcpServers`  |
+| VS Code     | `.vscode/mcp.json`     | `servers`     |
+
+Sous VS Code, reprenez donc le même bloc en renommant `mcpServers` en `servers`.
 
 Rien à installer : `npx` récupère le serveur au premier lancement. Le tuteur ne
 lit que ce dépôt, et journalise ses réponses dans `.tutor/session.log.jsonl`.
